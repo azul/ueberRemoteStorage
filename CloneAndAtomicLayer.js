@@ -1,5 +1,5 @@
 /**
- * 2011 Peter 'Pita' Martischka
+ * 2012 Max 'Azul' Wiehle
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,70 +23,70 @@ var defaultLogger = {debug: function(){}, info: function(){}, error: function(){
 /**
  The Constructor
 */
-exports.database = function(type, dbSettings, wrapperSettings, logger)
+exports.remote = function(type, backendSettings, wrapperSettings, logger)
 {
   if(!type)
   {
-    type = "sqlite";
-    dbSettings = null;
+    type = "dav";
+    backendSettings = null;
     wrapperSettings = null;
   }
 
-  //saves all settings and require the db module
+  //saves all settings and require the backend module
   this.type = type;
-  this.db_module = require("./" + type + "_db");
-  this.dbSettings = dbSettings; 
+  this.backend_module = require("./" + type );
+  this.backendSettings = backendSettings; 
   this.wrapperSettings = wrapperSettings; 
   this.logger = logger || defaultLogger;
   this.channels = new channels.channels(doOperation);
 }
 
-exports.database.prototype.init = function(callback)
+exports.remote.prototype.init = function(callback)
 {
-  var db = new this.db_module.database(this.dbSettings);
-  this.db = new cacheAndBufferLayer.database(db, this.wrapperSettings, this.logger);
-  this.db.init(callback);
+  var backend = new this.backend_module.remote(this.backendSettings);
+  this.backend = new cacheAndBufferLayer.remote(backend, this.wrapperSettings, this.logger);
+  this.backend.init(callback);
 }
 
 /**
  Wrapper functions
 */
 
-exports.database.prototype.doShutdown = function(callback)
+exports.remote.prototype.doShutdown = function(callback)
 {
-  this.db.doShutdown(callback);
+  this.backend.doShutdown(callback);
 }
 
-exports.database.prototype.get = function (key, callback)
+exports.remote.prototype.get = function (key, callback)
 {
-  this.channels.emit(key, {"db": this.db, "type": "get", "key": key, "callback": callback});
+  this.channels.emit(key, {"backend": this.backend, "type": "get", "key": key, "callback": callback});
 }
 
-exports.database.prototype.set = function (key, value, bufferCallback, writeCallback)
+exports.remote.prototype.set = function (key, value, bufferCallback, writeCallback)
 {
-  this.channels.emit(key, {"db": this.db, "type": "set", "key": key, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
+  this.channels.emit(key, {"backend": this.backend, "type": "set", "key": key, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
-exports.database.prototype.getSub = function (key, sub, callback)
+exports.remote.prototype.getSub = function (key, sub, callback)
 {
-  this.channels.emit(key, {"db": this.db, "type": "getsub", "key": key, "sub": sub, "callback": callback});
+  this.channels.emit(key, {"backend": this.backend, "type": "getsub", "key": key, "sub": sub, "callback": callback});
 }
 
-exports.database.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback)
+exports.remote.prototype.setSub = function (key, sub, value, bufferCallback, writeCallback)
 {
-  this.channels.emit(key, {"db": this.db, "type": "setsub", "key": key, "sub": sub, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
+  this.channels.emit(key, {"backend": this.backend, "type": "setsub", "key": key, "sub": sub, "value": clone(value), "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
-exports.database.prototype.remove = function (key, bufferCallback, writeCallback)
+exports.remote.prototype.remove = function (key, bufferCallback, writeCallback)
 {
-  this.channels.emit(key, {"db": this.db, "type": "remove", "key": key, "bufferCallback": bufferCallback, "writeCallback": writeCallback});
+  this.channels.emit(key, {"backend": this.backend, "type": "remove", "key": key, "bufferCallback": bufferCallback, "writeCallback": writeCallback});
 }
 
 function doOperation (operation, callback)
 {
   if(operation.type == "get")
   {
-    operation.db.get(operation.key, function(err, value)
+    operation.backend.get(operation.key, function(err, value)
     {
       //clone the value
       value = clone(value);
@@ -100,7 +100,7 @@ function doOperation (operation, callback)
   }
   else if(operation.type == "set")
   {  
-    operation.db.set(operation.key, operation.value, function(err)
+    operation.backend.set(operation.key, operation.value, function(err)
     {
       //call the queue callback
       callback();
@@ -111,7 +111,7 @@ function doOperation (operation, callback)
   }
   else if(operation.type == "getsub")
   {
-    operation.db.getSub(operation.key, operation.sub, function(err, value)
+    operation.backend.getSub(operation.key, operation.sub, function(err, value)
     {
       //clone the value
       value = clone(value);
@@ -125,7 +125,7 @@ function doOperation (operation, callback)
   }
   else if(operation.type == "setsub")
   {
-    operation.db.setSub(operation.key, operation.sub, operation.value, function(err)
+    operation.backend.setSub(operation.key, operation.sub, operation.value, function(err)
     {
       //call the queue callback
       callback();
@@ -136,7 +136,7 @@ function doOperation (operation, callback)
   }
   else if(operation.type == "remove")
   {
-    operation.db.remove(operation.key, function(err)
+    operation.backend.remove(operation.key, function(err)
     {
       //call the queue callback
       callback();
@@ -147,9 +147,9 @@ function doOperation (operation, callback)
   }
 }
 
-exports.database.prototype.close = function(callback)
+exports.remote.prototype.close = function(callback)
 {
-  this.db.close(callback);
+  this.backend.close(callback);
 }
 
 function clone(obj)

@@ -1,12 +1,10 @@
 {
-  "name"           : "ueberDB",
-  "description"    : "transform every database into a object key value store",
-  "url"            : "https://github.com/Pita/ueberDB",
-  "keywords"       : ["database", "keyvalue"],
-  "author"         : "Peter 'Pita' Martischka <petermartischka@googlemail.com>",
+  "name"           : "ueberRemote",
+  "description"    : "transform RemoteStorage into a object key value store",
+  "url"            : "https://github.com/unhosted/ueberRemote",
+  "keywords"       : ["storage", "keyvalue", "remote", "unhosted"],
+  "author"         : "Azul <azul@unhosted.org>",
   "dependencies"   : {
-                       "mysql"   : "0.9.4",
-                       "dirty"   : "0.9.4",
                        "async"   : "0.1.15",
                        "channels": "0.0.2"
                      },
@@ -14,5 +12,5 @@
                        "log4js"  : "0.3.9"
                      },
   "main"           : "./CloneAndAtomicLayer",
-  "version"        : "0.1.5"
+  "version"        : "0.0.1"
 }
