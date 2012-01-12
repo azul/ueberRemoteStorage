@@ -1,67 +1,93 @@
+http = require('http')
+url = require('url')
 
-define(['./ajax'], function(ajax) {
-    function keyToAddress(key) {
-      var i = 0;
-      while(i < key.length && key[i] =='u') {
-       i++;
+remoteCouch = function(params){
+
+  var couch = params;
+
+  function keyToAddress(key) {
+    var i = 0;
+    while(i < key.length && key[i] =='u') {
+      i++;
+    }
+    if((i < key.length) && (key[i] == '_')) {
+      key = 'u'+key;
+    }
+    return couch.backendAddress + key;
+  }
+
+  function doCall(method, key, value, deadLine, callback) {
+    var httpObj = url.parse(keyToAddress(key));
+    httpObj.method = method;
+    httpObj.headers= {Authorization: 'Bearer '+ couch.backendToken)};
+    var req = http.request(options, function(res) {
+      console.log(method +' STATUS: ' + res.statusCode);
+      if(res.statusCode == 404) {
+        callback(false, null)
+      } else {
+        res.on('data', function (chunk) {
+          console.log(method + 'DATA: ' + chunk);
+          callback(false, chunk)
+        });
       }
-      if((i < key.length) && (key[i] == '_')) {
-        key = 'u'+key;
+      if(method='PUT') {
+        callback(false, null)
       }
-      return localStorage.getItem('_shadowBackendAddress') + key;
-    }
-    function doCall(method, key, value, err, cb, deadLine) {
-      var ajaxObj = {
-        url: keyToAddress(key),
-        method: method,
-        error: err,
-        success: cb,
-        deadLine: deadLine
+    });
+    req.on('error', function(e) {
+      // I have no idea if this works. Could not find info about the
+      // error in the API
+      if(e.status == 404) {
+        callback(false, null)
+      } else {
+        callback(e, null)
       }
-      ajaxObj.headers= {Authorization: 'Bearer '+localStorage.getItem('_shadowBackendToken')};
-      ajaxObj.fields={withCredentials: 'true'};
-      if(method!='GET') {
-        ajaxObj.data=value;
+    });
+
+    if(method!='GET') {
+      req.write(value);
+    }
+    req.end();
+  }
+}
+  
+  couch.getUserAddress = function() {
+    return couch.backendAddress
+  }
+
+
+  couch.get = function(key, callback) {
+    console.log('couch.get("'+key+'", callback);');
+    doCall('GET', key, null, function(str) {
+      var obj = JSON.parse(str);
+      couch['_shadowCouchRev_'+key] = obj._rev;
+      callback(false, obj.value);
+    }
+  }
+
+  couch.set = function(key, value, callback) {
+    console.log('couch.set("'+key+'", "'+value+'", callback);');
+    var revision = couch['_shadowCouchRev_'+key];
+    var obj = {
+      value: value
+    };
+    if(revision) {
+      obj._rev = revision;
+    }
+    doCall('PUT', key, JSON.stringify(obj), function(err, str) {
+      var obj = JSON.parse(str);
+      if(obj.rev) {
+        couch.['_shadowCouchRev_'+key] = obj.rev;
       }
-      ajax.ajax(ajaxObj);
+      callback();
     }
-    function init(address, bearerToken) {
-      localStorage.setItem('_shadowBackendAddress', address);
-      localStorage.setItem('_shadowBackendToken', bearerToken);
-    }
-    function get(key, err, cb, deadLine) {
-      console.log('couch.get("'+key+'", err, cb, '+deadLine+');');
-      doCall('GET', key, null, err, function(str) {
-        var obj = JSON.parse(str);
-        localStorage.setItem('_shadowCouchRev_'+key, obj._rev);
-        cb(obj.value);
-      }, deadLine);
-    }
-    function set(key, value, err, cb, deadLine) {
-      console.log('couch.set("'+key+'", "'+value+'", err, cb, '+deadLine+');');
-      var revision = localStorage.getItem('_shadowCouchRev_'+key);
-      var obj = {
-        value: value
-      };
-      if(revision) {
-        obj._rev = revision;
-      }
-      doCall('PUT', key, JSON.stringify(obj), err, function(str) {
-        var obj = JSON.parse(str);
-        if(obj.rev) {
-          localStorage.setItem('_shadowCouchRev_'+key, obj.rev);
-        }
-        cb();
-      }, deadLine);
-    }
-    function remove(key, err, cb, deadLine) {
-      console.log('couch.remove("'+key+'", err, cb, '+deadLine+');');
-      doCall('DELETE', key, null, err, cb, deadLine);
-    }
-    return {
-      init: init,
-      set: set,
-      get: get,
-      remove: remove
-    }
-});
+  }
+ 
+  couch.remove = function(key, callback) {
+    console.log('couch.remove("'+key+'", callback);');
+    doCall('DELETE', key, null, callback);
+  } 
+  return couch
+}
+
+exports.remoteCouch = remoteCouch;
