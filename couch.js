@@ -19,8 +19,8 @@ remoteCouch = function(params){
   function doCall(method, key, value, deadLine, callback) {
     var httpObj = url.parse(keyToAddress(key));
     httpObj.method = method;
-    httpObj.headers= {Authorization: 'Bearer '+ couch.backendToken)};
-    var req = http.request(options, function(res) {
+    httpObj.headers= {Authorization: 'Bearer '+ couch.backendToken};
+    var req = http.request(httpObj, function(res) {
       console.log(method +' STATUS: ' + res.statusCode);
       if(res.statusCode == 404) {
         callback(false, null)
@@ -49,7 +49,6 @@ remoteCouch = function(params){
     }
     req.end();
   }
-}
   
   couch.getUserAddress = function() {
     return couch.backendAddress
@@ -62,7 +61,7 @@ remoteCouch = function(params){
       var obj = JSON.parse(str);
       couch['_shadowCouchRev_'+key] = obj._rev;
       callback(false, obj.value);
-    }
+    });
   }
 
   couch.set = function(key, value, callback) {
@@ -77,10 +76,10 @@ remoteCouch = function(params){
     doCall('PUT', key, JSON.stringify(obj), function(err, str) {
       var obj = JSON.parse(str);
       if(obj.rev) {
-        couch.['_shadowCouchRev_'+key] = obj.rev;
+        couch['_shadowCouchRev_'+key] = obj.rev;
       }
       callback();
-    }
+    });
   }
  
   couch.remove = function(key, callback) {

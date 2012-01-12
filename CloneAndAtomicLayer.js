@@ -25,7 +25,7 @@ var defaultLogger = {debug: function(){}, info: function(){}, error: function(){
 */
 exports.remote = function(type, backendSettings, wrapperSettings, logger)
 {
-  if(!type or type == 'undefined')
+  if(!type || type == 'undefined')
   {
     type = "couch";
   }

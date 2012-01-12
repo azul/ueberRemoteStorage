@@ -61,7 +61,7 @@ remoteDAV = function(params){
     doCall('GET', key, null, function(str) {
       var obj = JSON.parse(str);
       callback(false, obj.value);
-    }
+    });
   }
 
   dav.set = function(key, value, callback) {
