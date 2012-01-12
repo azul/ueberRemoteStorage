@@ -1,59 +1,82 @@
+http = require('http')
+url = require('url')
 
-define(['./ajax'], function(ajax) {
-    function keyToAddress(key) {
-      var i = 0;
-      while(i < key.length && key[i] =='u') {
-       i++;
+remoteDAV = function(params){
+  // params are most likely
+  // backendAddress
+  // backendToken
+  var dav = params;
+
+  function keyToAddress(key) {
+    var i = 0;
+    while(i < key.length && key[i] =='u') {
+      i++;
+    }
+    if((i < key.length) && (key[i] == '_')) {
+      key = 'u'+key;
+    }
+    return dav.backendAddress + key;
+  }
+
+  function doCall(method, key, value, deadLine, callback) {
+    var httpObj = url.parse(keyToAddress(key));
+    httpObj.method = method;
+    httpObj.headers = {Authorization: 'Basic '+ dav.backendToken};
+    var req = http.request(options, function(res) {
+      console.log(method +' STATUS: ' + res.statusCode);
+      if(res.statusCode == 404) {
+        callback(false, null)
+      } else {
+        res.on('data', function (chunk) {
+          console.log(method + 'DATA: ' + chunk);
+          callback(false, chunk)
+        });
       }
-      if((i < key.length) && (key[i] == '_')) {
-        key = 'u'+key;
+      if(method='PUT') {
+        callback(false, null)
       }
-      return localStorage.getItem('_shadowBackendAddress') + key;
-    }
-    function doCall(method, key, value, err, cb, deadLine) {
-      var ajaxObj = {
-        url: keyToAddress(key),
-        method: method,
-        error: err,
-        success: cb,
-        deadLine: deadLine
+    });
+    req.on('error', function(e) {
+      // I have no idea if this works. Could not find info about the
+      // error in the API
+      if(e.status == 404) {
+        callback(false, null)
+      } else {
+        callback(e, null)
       }
-      //ajaxObj.headers= {Authorization: 'Bearer '+localStorage.getItem('_shadowBackendToken')};
-      ajaxObj.headers= {Authorization: 'Basic '+localStorage.getItem('_shadowBackendToken')};
-      ajaxObj.fields={withCredentials: 'true'};
-      if(method!='GET') {
-        ajaxObj.data=value;
-      }
-      ajax.ajax(ajaxObj);
+    });
+
+    if(method!='GET') {
+      req.write(value);
     }
-    function init(address, bearerToken) {
-      localStorage.setItem('_shadowBackendAddress', address);
-      localStorage.setItem('_shadowBackendToken', bearerToken);
+    req.end();
+  }
+
+  dav.getUserAddress = function() {
+    return dav.backendAddress
+  }
+
+  dav.get = function(key, callback) {
+    console.log('dav.get("'+key+'", callback);');
+    doCall('GET', key, null, function(str) {
+      var obj = JSON.parse(str);
+      callback(false, obj.value);
     }
-    function get(key, err, cb, deadLine) {
-      console.log('couch.get("'+key+'", err, cb, '+deadLine+');');
-      doCall('GET', key, null, err, function(str) {
-        var obj = JSON.parse(str);
-        cb(obj.value);
-      }, deadLine);
-    }
-    function set(key, value, err, cb, deadLine) {
-      console.log('couch.set("'+key+'", "'+value+'", err, cb, '+deadLine+');');
-      var obj = {
-        value: value
-      };
-      doCall('PUT', key, JSON.stringify(obj), err, function(str) {
-        cb();
-      }, deadLine);
-    }
-    function remove(key, err, cb, deadLine) {
-      console.log('couch.remove("'+key+'", err, cb, '+deadLine+');');
-      doCall('DELETE', key, null, err, cb, deadLine);
-    }
-    return {
-      init: init,
-      set: set,
-      get: get,
-      remove: remove
+  }
+
+  dav.set = function(key, value, callback) {
+    console.log('dav.set("'+key+'", "'+value+'", callback);');
+    var obj = {
+      value: value
     };
-});
+    doCall('PUT', key, JSON.stringify(obj), callback);
+  }
+ 
+  dav.remove = function(key, callback) {
+    console.log('dav.remove("'+key+'", callback);');
+    doCall('DELETE', key, null, callback);
+  } 
+  return dav
+}
+
+exports.remoteDAV = remoteDAV;

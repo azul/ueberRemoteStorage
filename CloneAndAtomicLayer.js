@@ -34,7 +34,7 @@ exports.remote = function(type, backendSettings, wrapperSettings, logger)
 
   //saves all settings and require the backend module
   this.type = type;
-  this.backend_module = require("./" + type );
+  this.backend_module = require("./" + type + "_backend");
   this.backendSettings = backendSettings; 
   this.wrapperSettings = wrapperSettings; 
   this.logger = logger || defaultLogger;
