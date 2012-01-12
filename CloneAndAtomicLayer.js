@@ -25,11 +25,9 @@ var defaultLogger = {debug: function(){}, info: function(){}, error: function(){
 */
 exports.remote = function(type, backendSettings, wrapperSettings, logger)
 {
-  if(!type)
+  if(!type or type == 'undefined')
   {
-    type = "dav";
-    backendSettings = null;
-    wrapperSettings = null;
+    type = "couch";
   }
 
   //saves all settings and require the backend module

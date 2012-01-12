@@ -1,7 +1,7 @@
 {
-  "name"           : "ueberRemote",
-  "description"    : "transform RemoteStorage into a object key value store",
-  "url"            : "https://github.com/unhosted/ueberRemote",
+  "name"           : "ueberRemoteStorage",
+  "description"    : "unhosteds RemoteStorage backends used as a object key value store",
+  "url"            : "https://github.com/unhosted/ueberRemoteStorage",
   "keywords"       : ["storage", "keyvalue", "remote", "unhosted"],
   "author"         : "Azul <azul@unhosted.org>",
   "dependencies"   : {
@@ -12,5 +12,5 @@
                        "log4js"  : "0.3.9"
                      },
   "main"           : "./CloneAndAtomicLayer",
-  "version"        : "0.0.1"
+  "version"        : "0.0.2"
 }
