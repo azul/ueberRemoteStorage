@@ -17,8 +17,8 @@ remoteCouch = function(params){
     return couch.storageAddress + key;
   }
 
-  function doCall(method, key, value, deadLine, callback) {
-    console.log(method + ' request to: ' + keyToAdress(key));
+  function doCall(method, key, value, callback) {
+    console.log(method + ' request to: ' + keyToAddress(key));
     var httpObj = url.parse(keyToAddress(key));
     httpObj.method = method;
     httpObj.headers= {Authorization: 'Bearer '+ couch.bearerToken};
