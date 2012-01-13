@@ -4,6 +4,7 @@ url = require('url')
 remoteCouch = function(params){
 
   var couch = params;
+  console.log('couch on ' + couch.storageAddress );
 
   function keyToAddress(key) {
     var i = 0;
@@ -17,10 +18,10 @@ remoteCouch = function(params){
   }
 
   function doCall(method, key, value, deadLine, callback) {
+    console.log(method + ' request to: ' + keyToAdress(key));
     var httpObj = url.parse(keyToAddress(key));
     httpObj.method = method;
     httpObj.headers= {Authorization: 'Bearer '+ couch.bearerToken};
-    console.log(method + ' request to: ' + httpObj.host + httpObj.path );
     var req = http.request(httpObj, function(res) {
       console.log(method +' STATUS: ' + res.statusCode);
       if(res.statusCode == 404) {
