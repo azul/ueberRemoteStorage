@@ -13,13 +13,14 @@ remoteCouch = function(params){
     if((i < key.length) && (key[i] == '_')) {
       key = 'u'+key;
     }
-    return couch.backendAddress + key;
+    return couch.storageAddress + key;
   }
 
   function doCall(method, key, value, deadLine, callback) {
     var httpObj = url.parse(keyToAddress(key));
     httpObj.method = method;
-    httpObj.headers= {Authorization: 'Bearer '+ couch.backendToken};
+    httpObj.headers= {Authorization: 'Bearer '+ couch.bearerToken};
+    console.log(method + ' request to: ' + httpObj.host + httpObj.path );
     var req = http.request(httpObj, function(res) {
       console.log(method +' STATUS: ' + res.statusCode);
       if(res.statusCode == 404) {
@@ -35,6 +36,7 @@ remoteCouch = function(params){
       }
     });
     req.on('error', function(e) {
+      console.log(method + 'error: ' + e.status);
       // I have no idea if this works. Could not find info about the
       // error in the API
       if(e.status == 404) {
@@ -51,7 +53,7 @@ remoteCouch = function(params){
   }
   
   couch.getUserAddress = function() {
-    return couch.backendAddress
+    return couch.storageAddress
   }
 
 
