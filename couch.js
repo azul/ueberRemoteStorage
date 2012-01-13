@@ -25,26 +25,17 @@ remoteCouch = function(params){
     var req = http.request(httpObj, function(res) {
       console.log(method +' STATUS: ' + res.statusCode);
       if(res.statusCode == 404) {
-        callback(false, null)
+        callback(null, null)
       } else {
         res.on('data', function (chunk) {
-          console.log(method + 'DATA: ' + chunk);
-          callback(false, chunk)
+          console.log(method + ' DATA: ' + chunk);
+          callback(null, chunk)
         });
-      }
-      if(method='PUT') {
-        callback(false, null)
       }
     });
     req.on('error', function(e) {
-      console.log(method + 'error: ' + e.status);
-      // I have no idea if this works. Could not find info about the
-      // error in the API
-      if(e.status == 404) {
-        callback(false, null)
-      } else {
-        callback(e, null)
-      }
+      console.warn(method + 'ERROR: ' + e.status);
+      callback(e, null)
     });
 
     if(method!='GET') {
@@ -60,8 +51,15 @@ remoteCouch = function(params){
 
   couch.get = function(key, callback) {
     console.log('couch.get("'+key+'", callback);');
-    doCall('GET', key, null, function(str) {
+    doCall('GET', key, null, function(err, str) {
+      if(err != null || str == null)
+      {
+        callback(err, null)
+        return;
+      }
+
       var obj = JSON.parse(str);
+      
       couch['_shadowCouchRev_'+key] = obj._rev;
       callback(false, obj.value);
     });
@@ -77,11 +75,16 @@ remoteCouch = function(params){
       obj._rev = revision;
     }
     doCall('PUT', key, JSON.stringify(obj), function(err, str) {
+      if(str == null)
+      {
+        callback(err);
+        return;
+      }
       var obj = JSON.parse(str);
-      if(obj.rev) {
+      if(obj != null && obj.rev) {
         couch['_shadowCouchRev_'+key] = obj.rev;
       }
-      callback();
+      callback(err);
     });
   }
  
