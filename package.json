@@ -12,5 +12,5 @@
                        "log4js"  : "0.3.9"
                      },
   "main"           : "./CloneAndAtomicLayer",
-  "version"        : "0.0.3"
+  "version"        : "0.0.4"
 }
