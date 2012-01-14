@@ -1,6 +1,5 @@
 http = require('http')
 url = require('url')
-util = require('util')
 
 remoteCouch = function(params){
 
@@ -23,18 +22,18 @@ remoteCouch = function(params){
     var httpObj = url.parse(keyToAddress(key));
     httpObj.method = method;
     httpObj.headers= {Authorization: 'Bearer '+ couch.bearerToken};
-    console.warn(util.inspect(httpObj));
+    console.warn(JSON.stringify(httpObj, null, 2));
     var req = http.request(httpObj, function(res) {
       console.warn(method +' STATUS: ' + res.statusCode);
       console.warn(method +' HEADERS: ' + JSON.stringify(res.headers));
-      if(res.statusCode == 404) {
-        callback(null, null)
-      } else {
-        res.on('data', function (chunk) {
-          console.log(method + ' DATA: ' + chunk);
+      res.on('data', function (chunk) {
+        console.log(method + ' DATA: ' + chunk);
+        if(res.statusCode == 404) {
+          callback(null, null)
+        } else {
           callback(null, chunk)
-        });
-      }
+        }
+      });
     });
     req.on('error', function(e) {
       console.warn(method + 'ERROR: ' + e.status);
