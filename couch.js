@@ -21,7 +21,10 @@ remoteCouch = function(params){
     console.log(method + ' request to: ' + keyToAddress(key));
     var httpObj = url.parse(keyToAddress(key));
     httpObj.method = method;
-    httpObj.headers= {Authorization: 'Bearer '+ couch.bearerToken};
+    httpObj.path = httpObj.pathname;
+    httpObj.headers= {
+      Authorization: 'Bearer '+ couch.bearerToken
+    };
     console.warn(JSON.stringify(httpObj, null, 2));
     var req = http.request(httpObj, function(res) {
       console.warn(method +' STATUS: ' + res.statusCode);
@@ -41,6 +44,7 @@ remoteCouch = function(params){
     });
 
     if(method!='GET') {
+      console.warn("value :"+value);
       req.write(value);
     }
     req.end();
@@ -64,7 +68,7 @@ remoteCouch = function(params){
       var obj = JSON.parse(str);
       
       couch['_shadowCouchRev_'+key] = obj._rev;
-      callback(false, obj.value);
+      callback(null, obj.value);
     });
   }
 
