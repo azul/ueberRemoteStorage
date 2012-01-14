@@ -1,5 +1,6 @@
 http = require('http')
 url = require('url')
+util = require('util')
 
 remoteCouch = function(params){
 
@@ -22,8 +23,10 @@ remoteCouch = function(params){
     var httpObj = url.parse(keyToAddress(key));
     httpObj.method = method;
     httpObj.headers= {Authorization: 'Bearer '+ couch.bearerToken};
+    console.warn(util.inspect(httpObj));
     var req = http.request(httpObj, function(res) {
-      console.log(method +' STATUS: ' + res.statusCode);
+      console.warn(method +' STATUS: ' + res.statusCode);
+      console.warn(method +' HEADERS: ' + JSON.stringify(res.headers));
       if(res.statusCode == 404) {
         callback(null, null)
       } else {
@@ -42,6 +45,7 @@ remoteCouch = function(params){
       req.write(value);
     }
     req.end();
+    console.warn("ending the request");
   }
   
   couch.getUserAddress = function() {
@@ -57,7 +61,7 @@ remoteCouch = function(params){
         callback(err, null)
         return;
       }
-
+      
       var obj = JSON.parse(str);
       
       couch['_shadowCouchRev_'+key] = obj._rev;
