@@ -8,7 +8,7 @@ exports.remote = function(settings)
   this.settings = settings;
   this.settings.cache = 0;
   this.settings.writeInterval = 0;
-  this.settings.json = true;
+  this.settings.json = false;
 }
 
 exports.remote.prototype.init = function(callback)

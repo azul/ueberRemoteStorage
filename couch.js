@@ -26,6 +26,7 @@ remoteCouch = function(params){
       Authorization: 'Bearer '+ couch.bearerToken
     };
     console.warn(JSON.stringify(httpObj, null, 2));
+    console.warn(JSON.stringify(httpObj.headers, null, 2));
     var req = http.request(httpObj, function(res) {
       console.warn(method +' STATUS: ' + res.statusCode);
       console.warn(method +' HEADERS: ' + JSON.stringify(res.headers));
