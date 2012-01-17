@@ -23,15 +23,16 @@ remoteCouch = function(params){
     httpObj.method = method;
     httpObj.path = httpObj.pathname;
     httpObj.headers= {
-      Authorization: 'Bearer '+ couch.bearerToken
+      Authorization: 'Bearer '+ couch.bearerToken + '='
     };
     console.warn(JSON.stringify(httpObj, null, 2));
-    console.warn(JSON.stringify(httpObj.headers, null, 2));
+    console.warn("Bearer: \n"+couch.bearerToken);
     var req = http.request(httpObj, function(res) {
       console.warn(method +' STATUS: ' + res.statusCode);
-      console.warn(method +' HEADERS: ' + JSON.stringify(res.headers));
+      console.warn(method +' HEADERS: ' + JSON.stringify(res.headers, null, 2));
       res.on('data', function (chunk) {
-        console.log(method + ' DATA: ' + chunk);
+        console.log(method + ' DATA: ');
+        console.log(JSON.stringify(JSON.parse(chunk), null, 2));
         if(res.statusCode == 404) {
           callback(null, null)
         } else {

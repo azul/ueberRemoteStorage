@@ -27,7 +27,7 @@ exports.remote = function(type, backendSettings, wrapperSettings, logger)
 {
   if(!type || type == 'undefined')
   {
-    type = "couch";
+    type = "CouchDB";
   }
 
   //saves all settings and require the backend module
