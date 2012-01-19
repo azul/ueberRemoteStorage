@@ -32,7 +32,10 @@ remoteCouch = function(params){
       console.warn(method +' HEADERS: ' + JSON.stringify(res.headers, null, 2));
       res.on('data', function (chunk) {
         console.log(method + ' DATA: ');
-        console.log(JSON.stringify(JSON.parse(chunk), null, 2));
+        if(chunk)
+        {
+          console.log(JSON.stringify(JSON.parse(chunk), null, 2));
+        }
         if(res.statusCode == 404) {
           callback(null, null)
         } else {
