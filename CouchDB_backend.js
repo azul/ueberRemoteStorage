@@ -6,8 +6,8 @@ exports.remote = function(settings)
   this.backend=null;
 
   this.settings = settings;
-  this.settings.cache = 0;
-  this.settings.writeInterval = 0;
+  this.settings.cache = 1000;
+  this.settings.writeInterval = 1000;
   this.settings.json = false;
 }
 
