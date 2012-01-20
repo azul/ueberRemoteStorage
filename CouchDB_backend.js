@@ -26,8 +26,8 @@ exports.remote = function(settings)
   this.settings = settings;
   
   //set default settings
-  this.settings.cache = 1000;
-  this.settings.writeInterval = 100;
+  this.settings.cache = 100;
+  this.settings.writeInterval = 500;
   this.settings.json = false;
 }
 
