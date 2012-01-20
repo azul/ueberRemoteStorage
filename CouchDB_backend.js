@@ -16,10 +16,11 @@
 
 var couch = require("felix-couchdb");
 var async = require("async");
+var url = require("url");
 
-exports.database = function(settings)
+exports.remote = function(settings)
 {
-  this.db=null;
+  this.backend=null;
   this.client=null;
   
   this.settings = settings;
@@ -30,27 +31,27 @@ exports.database = function(settings)
   this.settings.json = false;
 }
 
-exports.database.prototype.init = function(callback)
+exports.remote.prototype.init = function(callback)
 {
   // now this is a bit strange because we use a proxy so the 
-  // actual domain ends up in the path and thus in the database name.
+  // actual domain ends up in the path and thus in the remote name.
   // and we use port 80.
   var _this = this;
   var httpObj = url.parse(this.settings.storageAddress);
-  this.client = couch.createClient(80, httpObj.host, null, null, 0);
+  this.client = couch.createClient(5984, httpObj.host, null, null, 0);
   // we need to rewrite authorization.
   this.client._authorizationHeaders = function(headers) {
-    headers.authorization = "Bearer " + _this.settings.bearerToken + '=' ;
-    }
+    headers.Authorization = "Basic " + _this.settings.bearerToken + '=' ;
     return headers;
   };
-  this.db = this.client.db(httpObj.pathname);
+//  console.warn("db name "+httpObj.pathname.substr(1));
+  this.backend = this.client.db('documents');
   callback();
 }
 
-exports.database.prototype.get = function (key, callback)
+exports.remote.prototype.get = function (key, callback)
 {
-  this.db.getDoc(key, function(er, doc)
+  this.backend.getDoc(key, function(er, doc)
   {
     if(doc == null)
     {
@@ -63,26 +64,26 @@ exports.database.prototype.get = function (key, callback)
   });
 }
 
-exports.database.prototype.set = function (key, value, callback)
+exports.remote.prototype.set = function (key, value, callback)
 {
   var _this = this;
-  this.db.getDoc(key, function(er, doc)
+  this.backend.getDoc(key, function(er, doc)
   {
     if(doc == null)
     {
-      _this.db.saveDoc({_id: key, value: value}, callback);
+      _this.backend.saveDoc({_id: key, value: value}, callback);
     }
     else
     {
-      _this.db.saveDoc({_id: key, _rev: doc._rev, value: value}, callback);
+      _this.backend.saveDoc({_id: key, _rev: doc._rev, value: value}, callback);
     }
   });
 }
 
-exports.database.prototype.remove = function (key, callback)
+exports.remote.prototype.remove = function (key, callback)
 {
   var _this = this;
-  this.db.getDoc(key, function(er, doc)
+  this.backend.getDoc(key, function(er, doc)
   {
     if(doc == null)
     {
@@ -90,7 +91,7 @@ exports.database.prototype.remove = function (key, callback)
     }
     else
     {
-      _this.db.removeDoc(key, doc._rev, function(er,r)
+      _this.backend.removeDoc(key, doc._rev, function(er,r)
       {
         callback(null);
       });
@@ -98,7 +99,7 @@ exports.database.prototype.remove = function (key, callback)
   });
 }
 
-exports.database.prototype.doBulk = function (bulk, callback)
+exports.remote.prototype.doBulk = function (bulk, callback)
 {
   var _this = this;
   var keys = [];
@@ -111,7 +112,7 @@ exports.database.prototype.doBulk = function (bulk, callback)
   async.series([
     function(callback)
     {
-      _this.db.request({
+      _this.backend.request({
         method: 'POST',
         path: '/_all_docs',
         data: {keys: keys},
@@ -153,12 +154,12 @@ exports.database.prototype.doBulk = function (bulk, callback)
       }
       callback();
     }], function(err) {
-      _this.db.bulkDocs({docs: setters}, callback);
+      _this.backend.bulkDocs({docs: setters}, callback);
     }
   );
 }
 
-exports.database.prototype.close = function(callback)
+exports.remote.prototype.close = function(callback)
 {
   if(callback) callback();
 }
