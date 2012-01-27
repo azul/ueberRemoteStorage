@@ -24,6 +24,7 @@ exports.remote = function(settings)
   this.client=null;
   
   this.settings = settings;
+  console.warn("initialized Couch with:\n" + JSON.stringify(settings, null, 2)); 
   
   //set default settings
   this.settings.cache = 100;
@@ -41,7 +42,7 @@ exports.remote.prototype.init = function(callback)
   this.client = couch.createClient(5984, httpObj.host, null, null, 0);
   // we need to rewrite authorization.
   this.client._authorizationHeaders = function(headers) {
-    headers.Authorization = "Basic " + _this.settings.bearerToken + '=' ;
+    headers.Authorization = "Basic " + _this.settings.bearerToken;
     return headers;
   };
 //  console.warn("db name "+httpObj.pathname.substr(1));
@@ -118,7 +119,11 @@ exports.remote.prototype.doBulk = function (bulk, callback)
         data: {keys: keys},
       }, function(er, r)
       {
-        if (er) throw new Error(JSON.stringify(er));
+        if (er)
+        {
+          console.warn("Error in _add_docs request:\n"+ JSON.stringify(er)); 
+          throw new Error(JSON.stringify(er));
+        }
         rows = r.rows;
         for(var j in r.rows)
         {
@@ -154,7 +159,19 @@ exports.remote.prototype.doBulk = function (bulk, callback)
       }
       callback();
     }], function(err) {
-      _this.backend.bulkDocs({docs: setters}, callback);
+      if (err)
+      {
+        console.warn("Error in bulk async callback:\n"+ JSON.stringify(err)); 
+        throw new Error(JSON.stringify(er));
+      }
+      _this.backend.bulkDocs({docs: setters}, function(err, value)
+      {
+        if (err)
+        {
+          console.warn("Error in bulkDocs callback:\n"+ JSON.stringify(err)); 
+        }
+        callback(err,value);
+      });
     }
   );
 }
