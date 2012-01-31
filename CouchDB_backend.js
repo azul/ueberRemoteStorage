@@ -121,7 +121,9 @@ exports.remote.prototype.doBulk = function (bulk, callback)
       {
         if (er)
         {
-          console.warn("Error in _add_docs request:\n"+ JSON.stringify(er)); 
+          console.warn("Error in _all_docs request:\n"+ JSON.stringify(er)); 
+          console.warn("keys:\n"+ JSON.stringify(keys, null, 2)); 
+          console.warn("settings:\n"+ JSON.stringify(_this.settings, null, 2)); 
           throw new Error(JSON.stringify(er));
         }
         rows = r.rows;
