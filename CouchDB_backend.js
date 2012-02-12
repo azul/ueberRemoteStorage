@@ -54,14 +54,8 @@ exports.remote.prototype.get = function (key, callback)
 {
   this.backend.getDoc(key, function(er, doc)
   {
-    if(doc == null)
-    {
-      callback(null, null);
-    }
-    else
-    {
-      callback(null, doc.value);
-    }
+    if(doc != null) doc = doc.value || doc;
+    callback(er, doc);
   });
 }
 
@@ -70,6 +64,7 @@ exports.remote.prototype.set = function (key, value, callback)
   var _this = this;
   this.backend.getDoc(key, function(er, doc)
   {
+    if(er){callback(er, doc); return;}
     if(doc == null)
     {
       _this.backend.saveDoc({_id: key, value: value}, callback);
@@ -86,6 +81,7 @@ exports.remote.prototype.remove = function (key, callback)
   var _this = this;
   this.backend.getDoc(key, function(er, doc)
   {
+    if(er){callback(er, doc); return;}
     if(doc == null)
     {
       callback(null);
