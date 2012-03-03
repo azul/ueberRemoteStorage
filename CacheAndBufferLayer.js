@@ -74,6 +74,23 @@ exports.remote = function(wrappedBackend, settings, logger)
   //freeze the settings at this point
   this.settings = Object.freeze(this.settings);
   
+  /**
+   key is the key of the keyValue Object
+   value is a object
+   {
+     value: the value of the keyValue object, contains only deserialized data
+     dirty: true or false, means if its already written to the remote or not
+     callback: (optional) a array of callbacks that should be called once this value is written
+     timestamp: a timestamp that shows when this item was read or write the last time. 
+                The Garbage collector needs this value
+   }  
+   I moved this into the remote so it's per remote and not shared.
+  */
+  this.buffer = {};
+
+  //the length of the Buffer.
+  this.bufferLength = 0;
+
   //start the write Interval
   if(this.settings.writeInterval > 0)
   {
@@ -83,22 +100,6 @@ exports.remote = function(wrappedBackend, settings, logger)
   //set the flushing flag to false, this flag shows that there is a flushing action happing at the moment
   this.isFlushing = false;
 };
-
-/**
- key is the key of the keyValue Object
- value is a object
- {
-   value: the value of the keyValue object, contains only deserialized data
-   dirty: true or false, means if its already written to the remote or not
-   callback: (optional) a array of callbacks that should be called once this value is written
-   timestamp: a timestamp that shows when this item was read or write the last time. 
-              The Garbage collector needs this value
- }  
-*/
-exports.remote.prototype.buffer = {};
-
-//the length of the Buffer.
-exports.remote.prototype.bufferLength = 0;
 
 /**
  wraps the init function of the original DB
