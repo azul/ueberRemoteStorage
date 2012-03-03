@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var couch = require("felix-couchdb");
+var couch = require("felix-couchdb-v6");
 var async = require("async");
 var url = require("url");
 
@@ -52,7 +52,7 @@ exports.remote.prototype.init = function(callback)
 
 exports.remote.prototype.get = function (key, callback)
 {
-  this.backend.getDoc(key, function(er, doc)
+  var request = this.backend.getDoc(key, function(er, doc)
   {
     if(doc != null) doc = doc.value || doc;
     callback(er, doc);
