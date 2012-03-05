@@ -55,6 +55,8 @@ exports.remote.prototype.get = function (key, callback)
   var request = this.backend.getDoc(key, function(er, doc)
   {
     if(doc != null) doc = doc.value || doc;
+    // 404 - no key there yet.
+    if(er && er.reason == 'missing') er = null;
     callback(er, doc);
   });
 }
