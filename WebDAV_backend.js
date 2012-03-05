@@ -1,11 +1,11 @@
 var dav = require("./dav");
-console.log("Initialize Dav...");
 
 exports.remote = function(settings)
 {
   this.backend=null;
 
   this.settings = settings;
+  console.warn("initialized WebDAV with:\n" + JSON.stringify(settings, null, 2)); 
   this.settings.cache = 0;
   this.settings.writeInterval = 0;
   this.settings.json = true;

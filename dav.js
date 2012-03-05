@@ -58,18 +58,14 @@ remoteDAV = function(params){
 
   dav.get = function(key, callback) {
     console.log('dav.get("'+key+'", callback);');
-    doCall('GET', key, null, function(str) {
-      var obj = JSON.parse(str);
-      callback(false, obj.value);
+    doCall('GET', key, null, function(value) {
+      callback(false, value);
     });
   }
 
   dav.set = function(key, value, callback) {
     console.log('dav.set("'+key+'", "'+value+'", callback);');
-    var obj = {
-      value: value
-    };
-    doCall('PUT', key, JSON.stringify(obj), callback);
+    doCall('PUT', key, value, callback);
   }
  
   dav.remove = function(key, callback) {
