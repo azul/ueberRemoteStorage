@@ -26,7 +26,7 @@ remoteDAV = function(params){
     if(value) httpObj.headers["Content-Length"] = value.length;
     httpObj.fields={withCredentials: 'true'};
     console.log(httpObj);
-    var proto = (httpObj.protocol == 'https:') https : http;
+    var proto = (httpObj.protocol == 'https:') ? https : http;
     var req = proto.request(httpObj, function(res) {
       console.log(method +' STATUS: ' + res.statusCode);
       if(res.statusCode == 404) {
