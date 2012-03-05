@@ -25,7 +25,6 @@ remoteDAV = function(params){
     httpObj.headers = { Authorization: 'Bearer '+ dav.bearerToken }
     if(value) httpObj.headers["Content-Length"] = value.length;
     httpObj.fields={withCredentials: 'true'};
-    console.log(httpObj);
     var proto = (httpObj.protocol == 'https:') ? https : http;
     var req = proto.request(httpObj, function(res) {
       console.log(method +' STATUS: ' + res.statusCode);
@@ -62,17 +61,14 @@ remoteDAV = function(params){
   }
 
   dav.get = function(key, callback) {
-    console.log('dav.get("'+key+'", callback);');
     doCall('GET', key, null, null, callback);
   }
 
   dav.set = function(key, value, callback) {
-    console.log('dav.set("'+key+'", "'+value+'", callback);');
     doCall('PUT', key, value, null, callback);
   }
  
   dav.remove = function(key, callback) {
-    console.log('dav.remove("'+key+'", callback);');
     doCall('DELETE', key, null, null,  callback);
   } 
   return dav
