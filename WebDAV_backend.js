@@ -1,4 +1,5 @@
 var dav = require("./dav");
+var async = require("async");
 
 exports.remote = function(settings)
 {
@@ -6,8 +7,8 @@ exports.remote = function(settings)
 
   this.settings = settings;
   console.warn("initialized WebDAV with:\n" + JSON.stringify(settings, null, 2)); 
-  this.settings.cache = 0;
-  this.settings.writeInterval = 0;
+  this.settings.cache = 100;
+  this.settings.writeInterval = 50;
   this.settings.json = true;
 }
 
@@ -37,17 +38,24 @@ exports.remote.prototype.remove = function(key, callback)
 exports.remote.prototype.doBulk = function (bulk, callback)
 {
   var _this = this;
-  for(var i in bulk)
-  {  
-    if(bulk[i].type == "set")
+  
+  function setOrRemove(operation, callback){
+    if(operation.type == "set")
     {
-      this.backend.set(bulk[i].key, bulk[i].value, null)
+      _this.backend.set(operation.key, operation.value, callback)
     }
-    else if(bulk[i].type == "remove")
+    else if(operation.type == "remove")
     {
-      this.backend.remove(bulk[i].key, null)
+      _this.backend.remove(operation.key, callback)
+    }
+    else 
+    {
+      console.error("Invalid Operation in doBulk: "+operation);
+      callback(null); // let's continue never the less...
     }
   }
+
+  async.forEachLimit(bulk, 8, setOrRemove, callback);
 }
 
 exports.remote.prototype.close = function(callback)
