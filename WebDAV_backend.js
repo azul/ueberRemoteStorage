@@ -6,7 +6,7 @@ exports.remote = function(settings)
   this.backend=null;
 
   this.settings = settings;
-  console.warn("initialized WebDAV with:\n" + JSON.stringify(settings, null, 2)); 
+  console.warn("initialized simple with:\n" + JSON.stringify(settings, null, 2)); 
   this.settings.cache = 100;
   this.settings.writeInterval = 50;
   this.settings.json = true;
