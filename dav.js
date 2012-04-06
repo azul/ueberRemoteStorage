@@ -27,7 +27,7 @@ remoteDAV = function(params){
       httpObj = url.parse(keyToAddress(keyOrURL));
     }
     httpObj.method = method;
-    httpObj.headers = { Authorization: 'Bearer '+ dav.bearerToken };
+    httpObj.headers = { Authorization: 'Basic '+ dav.bearerToken };
     if(value) httpObj.headers["Content-Length"] = value.length;
     httpObj.fields={withCredentials: 'true'};
     var proto = (httpObj.protocol == 'https:') ? https : http;
